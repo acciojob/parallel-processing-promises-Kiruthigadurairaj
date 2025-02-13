@@ -1,39 +1,32 @@
 //your JS code here. If required.
 const output = document.getElementById("output");
 const btn = document.getElementById("download-images-button");
-const errorDiv = document.getElementById("error");
-const loadingDiv = document.getElementById("loading");
+
 const images = [
   { url: "https://picsum.photos/id/237/200/300" },
   { url: "https://picsum.photos/id/238/200/300" },
   { url: "https://picsum.photos/id/239/200/300" },
 ];
-function downloadImage(imageUrl) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.src = imageUrl;
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(`Failed to load image: ${imageUrl}`);
-  });
-}
+const imageLoad = (url) => {
+  return `<img src='${url}' />`;
+};
 
-async function downloadImages() {
-  loadingDiv.style.display = "block"; 
-  errorDiv.innerHTML = ""; 
-  output.innerHTML = ""; 
-
+const all = async () => {
   try {
-    const imagePromises = images.map(image => downloadImage(image.url));
-    const downloadedImages = await Promise.all(imagePromises);
-
-    downloadedImages.forEach(img => {
-      output.appendChild(img); 
+    const gallery = await Promise.all(images.map((val) => fetch(val.url)));
+    gallery.forEach((val) => {
+      output.insertAdjacentHTML("beforeend", imageLoad(val.url));
     });
-  } catch (error) {
-    errorDiv.innerHTML = error; 
-  } finally {
-    loadingDiv.style.display = "none"; 
-}
 
-btn.addEventListener("click", downloadImages);
+    return gallery;
+  } catch (err) {
+    return "failed to load images";
+  }
+};
 
+btn.addEventListener("click", () => {
+  all();
+  images.forEach((val) => {
+      output.insertAdjacentHTML("beforeend", imageLoad(val.url));
+    });
+});
