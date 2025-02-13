@@ -1,42 +1,39 @@
 //your JS code here. If required.
-document.addEventListener("DOMContentLoaded", () => {
-  const output = document.getElementById("output");
-  const loading = document.createElement("div");
-  const errorDiv = document.createElement("div");
-  loading.id = "loading";
-  errorDiv.id = "error";
-  loading.innerHTML = "Loading images...";
-  output.appendChild(loading);
-  output.appendChild(errorDiv);
+const output = document.getElementById("output");
+const btn = document.getElementById("download-images-button");
+const errorDiv = document.getElementById("error");
+const loadingDiv = document.getElementById("loading");
+const images = [
+  { url: "https://picsum.photos/id/237/200/300" },
+  { url: "https://picsum.photos/id/238/200/300" },
+  { url: "https://picsum.photos/id/239/200/300" },
+];
+function downloadImage(imageUrl) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.src = imageUrl;
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(`Failed to load image: ${imageUrl}`);
+  });
+}
 
-  const images = [
-    { url: "https://picsum.photos/id/237/200/300" },
-    { url: "https://picsum.photos/id/238/200/300" },
-    { url: "https://picsum.photos/id/239/200/300" },
-  ];
-  function downloadImage(image) {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.src = image.url;
-      img.onload = () => resolve(img);
-      img.onerror = () => reject(`Failed to load image: ${image.url}`);
+async function downloadImages() {
+  loadingDiv.style.display = "block"; 
+  errorDiv.innerHTML = ""; 
+  output.innerHTML = ""; 
+
+  try {
+    const imagePromises = images.map(image => downloadImage(image.url));
+    const downloadedImages = await Promise.all(imagePromises);
+
+    downloadedImages.forEach(img => {
+      output.appendChild(img); 
     });
-  }
-  function downloadImages() {
-    Promise.all(images.map(downloadImage))
-      .then((loadedImages) => {
-        loading.style.display = "none";
-        errorDiv.innerHTML = "";
+  } catch (error) {
+    errorDiv.innerHTML = error; 
+  } finally {
+    loadingDiv.style.display = "none"; 
+}
 
-        loadedImages.forEach((img) => {
-          output.appendChild(img);
-        });
-      })
-      .catch((error) => {
-        loading.style.display = "none";
-        errorDiv.innerHTML = error;
-        errorDiv.style.color = "red";
-      });
-  }
-  downloadImages();
-});
+btn.addEventListener("click", downloadImages);
+
